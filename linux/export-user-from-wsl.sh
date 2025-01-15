@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # @author Sérgio Oliveira
-# @version 1.0.0
+# @version 1.0.3
 # @license MIT
 # @description Esse aquivo é para exportar toda a pasta de um usuário Linux e 
 # os pacotes instalados na distribuição gerando assim arquivos para serem 
@@ -52,12 +52,15 @@ cat << EOF > "$arquivo_import_sh"
 #!/bin/bash
 
 # Descompactar o arquivo tar para o diretório /home/$usuario
-tar -xzf $arquivo_tar -C /home/$usuario
+tar -xzf $arquivo_tar -C /
+
+# Verifica se as permissões dos arquivos e diretórios foram preservadas
+chown -R $usuario:$usuario /home/$usuario
 
 echo "Importação concluída para /home/$usuario"
 
 # Instalar pacotes a partir do arquivo package_list.txt
-sudo apt install -y \$(cat /home/$usuario/package_list.txt)
+apt install -y \$(cat package_list.txt)
 
 echo "Pacotes instalados"
 EOF
@@ -72,17 +75,19 @@ print_ok "Arquivo $arquivo_import_sh criado em /var/tmp"
 cat << EOF > "$arquivo_readme"
 Instruções de uso:
 
-1. Copie o arquivo ${usuario}_linux.tar e o arquivo package_list.txt para a nova distribuição.
+1. Copie o arquivos
 
-2. Na nova distribuição, mova os arquivos para o diretório adequado, por exemplo:
-   - Copie o ${usuario}_linux.tar para o diretório /var/tmp.
-   - Copie o package_list.txt para o diretório /home/$usuario/.
+ ${usuario}_linux.tar 
+ package_list.txt 
+ import_user.sh
 
-3. Execute o arquivo de importação:
+para a nova distribuição em /var/tmp
+
+2. Execute o arquivo de importação:
    - Torne o script de importação executável: chmod +x /var/tmp/import_${usuario}.sh
-   - Execute o script de importação: /var/tmp/import_${usuario}.sh
+   - Execute o script de importação: sudo /var/tmp/import_${usuario}.sh
 
-O processo irá descompactar o arquivo tar e instalar os pacotes listados no package_list.txt.
+O processo irá descompactar o arquivo tar e instalar os pacotes listados no package_list.txt e pedirá a senha de root para instalar os pacotes faltantes e escrever em diretório de sistema, no caso, home.
 EOF
 
 # Mensagem final após criação do README.txt
